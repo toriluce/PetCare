@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TaskListView: View {
-    var tasks: [TaskEntity]
+    var tasks: [Task]
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -15,6 +15,6 @@ struct TaskListView: View {
 }
 
 #Preview {
-    TaskListView(tasks: [TaskEntity.example, TaskEntity.example2])
+    TaskListView(tasks: [Task.example, Task.example2])
         .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
 }

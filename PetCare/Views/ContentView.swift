@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var petViewModel = PetViewModel()
+    @StateObject var petViewModel = PetCareViewModel()
     @Environment(\.managedObjectContext) private var context
     @State private var isProfileMenuOpen = false
     
@@ -28,8 +28,8 @@ struct ContentView: View {
 }
 
 #Preview {
-    let previewModel = PetViewModel()
-    previewModel.pets = [PetEntity.example, PetEntity.example2]
+    let previewModel = PetCareViewModel()
+    previewModel.pets = [Pet.example, Pet.example2]
     
     return ContentView()
         .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)

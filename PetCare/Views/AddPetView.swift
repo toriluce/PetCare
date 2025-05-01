@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AddPetView: View {
     @Environment(\.managedObjectContext) private var context
-    @EnvironmentObject var petViewModel: PetViewModel
+    @EnvironmentObject var petViewModel: PetCareViewModel
     @Environment(\.dismiss) private var dismiss
     
     @State private var name = ""
@@ -41,5 +41,5 @@ struct AddPetView: View {
 #Preview {
     AddPetView()
         .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-        .environmentObject(PetViewModel())
+        .environmentObject(PetCareViewModel())
 }

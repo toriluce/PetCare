@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @EnvironmentObject var petViewModel: PetViewModel
+    @EnvironmentObject var petViewModel: PetCareViewModel
     @Environment(\.managedObjectContext) private var context
     
     @State private var showingAddPet = false
@@ -45,8 +45,8 @@ struct ProfileView: View {
 }
 
 #Preview {
-    let previewViewModel = PetViewModel()
-    previewViewModel.pets = [PetEntity.example, PetEntity.example2]
+    let previewViewModel = PetCareViewModel()
+    previewViewModel.pets = [Pet.example, Pet.example2]
     
     return ProfileView()
         .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)

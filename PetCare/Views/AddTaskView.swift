@@ -2,10 +2,10 @@ import SwiftUI
 
 struct AddTaskView: View {
     @Environment(\.managedObjectContext) private var context
-    @EnvironmentObject var petViewModel: PetViewModel
+    @EnvironmentObject var petViewModel: PetCareViewModel
     @Environment(\.dismiss) private var dismiss
     
-    var pet: PetEntity
+    var pet: Pet
     
     @State private var title = ""
     @State private var details = ""
@@ -41,7 +41,7 @@ struct AddTaskView: View {
 }
 
 #Preview {
-    AddTaskView(pet: PetEntity()) 
+    AddTaskView(pet: Pet()) 
         .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
-        .environmentObject(PetViewModel())
+        .environmentObject(PetCareViewModel())
 }

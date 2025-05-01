@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TaskView: View {
     @Environment(\.managedObjectContext) private var context
-    @ObservedObject var task: TaskEntity
+    @ObservedObject var task: Task
     
     var body: some View {
         HStack {
@@ -59,6 +59,6 @@ struct TaskView: View {
 }
 
 #Preview {
-    TaskView(task: TaskEntity.example)
+    TaskView(task: Task.example)
         .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
 }
