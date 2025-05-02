@@ -3,39 +3,32 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var petCareViewModel: PetCareViewModel
     @Environment(\.managedObjectContext) private var context
-    
+
     @State private var showingAddPet = false
-    @State private var selectedPet: Pet?
     @State private var petToDelete: Pet?
     @State private var showDeleteAlert = false
-    
+
     var body: some View {
         NavigationView {
             List {
                 Section(header: Text("Your Pets")) {
                     ForEach(petCareViewModel.pets, id: \.id) { pet in
-                        VStack(alignment: .leading) {
-                            Text(pet.name)
-                                .font(.headline)
-                            Text("Birthday: \(pet.birthday, style: .date)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                        NavigationLink(destination: PetDetailView(pet: pet)) {
+                            VStack(alignment: .leading) {
+                                Text(pet.name)
+                                    .font(.headline)
+                                Text("Birthday: \(pet.birthday, style: .date)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
                         }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        .contextMenu {
                             Button(role: .destructive) {
                                 petToDelete = pet
                                 showDeleteAlert = true
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
-                        }
-                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                            Button {
-                                selectedPet = pet
-                            } label: {
-                                Label("Edit", systemImage: "pencil")
-                            }
-                            .tint(.blue)
                         }
                     }
                 }
@@ -55,6 +48,16 @@ struct ProfileView: View {
                     .environmentObject(petCareViewModel)
                     .environment(\.managedObjectContext, context)
             }
+            .alert("Delete Pet?", isPresented: $showDeleteAlert) {
+                Button("Delete", role: .destructive) {
+                    if let pet = petToDelete {
+                        petCareViewModel.deletePet(pet, context: context)
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This action cannot be undone.")
+            }
             .onAppear {
                 petCareViewModel.fetchPets(context: context)
             }
@@ -65,7 +68,7 @@ struct ProfileView: View {
 #Preview {
     let previewViewModel = PetCareViewModel()
     previewViewModel.pets = [Pet.example, Pet.example2]
-    
+
     return ProfileView()
         .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
         .environmentObject(previewViewModel)

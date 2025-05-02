@@ -13,7 +13,7 @@ class PetCareViewModel: ObservableObject {
             print("Failed to fetch pets: \(error)")
         }
     }
-
+    
     func addPet(name: String, breed: String, species: String, birthday: Date?, context: NSManagedObjectContext) {
         let newPet = Pet(context: context)
         newPet.name = name
@@ -28,8 +28,8 @@ class PetCareViewModel: ObservableObject {
             print("Failed to save pet: \(error)")
         }
     }
-
-    func addTask(to pet: Pet, title: String, details: String, dueDate: Date?, isComplete: Bool, frequency: Date?, context: NSManagedObjectContext) {
+    
+    func addTask(to pet: Pet, title: String, details: String, isComplete: Bool, frequency: Date?, context: NSManagedObjectContext) {
         let newTask = Task(context: context)
         newTask.title = title
         newTask.details = details
@@ -48,13 +48,13 @@ class PetCareViewModel: ObservableObject {
             print("Failed to save task: \(error)")
         }
     }
-
+    
     func editPet(_ pet: Pet, name: String, breed: String, species: String, birthday: Date, context: NSManagedObjectContext) {
         pet.name = name
         pet.breed = breed
         pet.species = species
         pet.birthday = birthday
-
+        
         do {
             try context.save()
             fetchPets(context: context)
@@ -62,13 +62,13 @@ class PetCareViewModel: ObservableObject {
             print("Failed to edit pet: \(error)")
         }
     }
-
-    func editTask(_ task: Task, title: String, details: String, dueDate: Date?, isComplete: Bool, frequency: Date?, context: NSManagedObjectContext) {
+    
+    func editTask(_ task: Task, title: String, details: String, isComplete: Bool, frequency: Date?, context: NSManagedObjectContext) {
         task.title = title
         task.details = details
         task.isComplete = isComplete
         task.frequency = frequency
-
+        
         do {
             try context.save()
             fetchPets(context: context)
@@ -76,7 +76,7 @@ class PetCareViewModel: ObservableObject {
             print("Failed to edit task: \(error)")
         }
     }
-
+    
     func deletePet(_ pet: Pet, context: NSManagedObjectContext) {
         context.delete(pet)
         do {
@@ -86,13 +86,13 @@ class PetCareViewModel: ObservableObject {
             print("Failed to delete pet: \(error)")
         }
     }
-
+    
     func deleteTask(_ task: Task, from pet: Pet, context: NSManagedObjectContext) {
         var taskSet = pet.tasks ?? []
         taskSet.remove(task)
         pet.tasks = taskSet
         context.delete(task)
-
+        
         do {
             try context.save()
             fetchPets(context: context)

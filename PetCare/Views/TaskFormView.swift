@@ -6,11 +6,24 @@ struct TaskFormView: View {
     @Environment(\.dismiss) private var dismiss
     
     var pet: Pet
+    var existingTask: Task?
     
-    @State private var title = ""
-    @State private var details = ""
-    @State private var dueDate = Date()
-    @State private var frequency = Date()
+    @State private var title: String
+    @State private var details: String
+    @State private var frequency: Date
+    
+    var isEditing: Bool {
+        existingTask != nil
+    }
+    
+    init(pet: Pet, existingTask: Task? = nil) {
+        self.pet = pet
+        self.existingTask = existingTask
+        
+        _title = State(initialValue: existingTask?.title ?? "")
+        _details = State(initialValue: existingTask?.details ?? "")
+        _frequency = State(initialValue: existingTask?.frequency ?? Date())
+    }
     
     var body: some View {
         NavigationView {
@@ -18,15 +31,18 @@ struct TaskFormView: View {
                 Section(header: Text("Task Details")) {
                     TextField("Title", text: $title)
                     TextField("Details", text: $details)
-                    DatePicker("Due Date", selection: $dueDate, displayedComponents: [.date])
                     DatePicker("Frequency", selection: $frequency, displayedComponents: [.date])
                 }
             }
-            .navigationTitle("Add Task")
+            .navigationTitle(isEditing ? "Edit Task" : "Add Task")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        petCareViewModel.addTask(to: pet, title: title, details: details, dueDate: dueDate, isComplete: false, frequency: frequency, context: context)
+                        if let task = existingTask {
+                            petCareViewModel.editTask(task, title: title, details: details, isComplete: task.isComplete, frequency: frequency, context: context)
+                        } else {
+                            petCareViewModel.addTask(to: pet, title: title, details: details, isComplete: false, frequency: frequency, context: context)
+                        }
                         dismiss()
                     }
                 }
@@ -41,7 +57,7 @@ struct TaskFormView: View {
 }
 
 #Preview {
-    TaskFormView(pet: Pet()) 
-        .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
+    TaskFormView(pet: Pet.example, existingTask: Task.example)
+        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
         .environmentObject(PetCareViewModel())
 }

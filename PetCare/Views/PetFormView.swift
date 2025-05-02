@@ -5,10 +5,16 @@ struct PetFormView: View {
     @EnvironmentObject var petCareViewModel: PetCareViewModel
     @Environment(\.dismiss) private var dismiss
     
+    var existingPet: Pet?
+    
     @State private var name = ""
     @State private var breed = ""
     @State private var species = ""
     @State private var birthday = Date()
+    
+    var isEditing: Bool {
+        existingPet != nil
+    }
     
     var body: some View {
         NavigationView {
@@ -20,11 +26,15 @@ struct PetFormView: View {
                     DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
                 }
             }
-            .navigationTitle("Add Pet")
+            .navigationTitle(isEditing ? "Edit Pet" : "Add Pet")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        petCareViewModel.addPet(name: name, breed: breed, species: species, birthday: birthday, context: context)
+                        if let pet = existingPet {
+                            petCareViewModel.editPet(pet, name: name, breed: breed, species: species, birthday: birthday, context: context)
+                        } else {
+                            petCareViewModel.addPet(name: name, breed: breed, species: species, birthday: birthday, context: context)
+                        }
                         dismiss()
                     }
                 }
@@ -32,6 +42,14 @@ struct PetFormView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                }
+            }
+            .onAppear {
+                if let pet = existingPet {
+                    name = pet.name
+                    breed = pet.breed
+                    species = pet.species
+                    birthday = pet.birthday
                 }
             }
         }

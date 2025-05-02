@@ -3,12 +3,12 @@ import SwiftUI
 struct TaskDetailView: View {
     @Environment(\.managedObjectContext) private var context
     @Environment(\.dismiss) private var dismiss
-
+    
     @ObservedObject var task: Task
-
+    
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let pet = task.taskPet {
@@ -19,15 +19,15 @@ struct TaskDetailView: View {
                     Text("Birthday: \(pet.birthday.formatted(date: .abbreviated, time: .omitted))")
                 }
             }
-
+            
             Section(header: Text("Task").font(.headline)) {
                 Text("Title: \(task.title)")
                 Text("Details: \(task.details)")
                 Text("Completed: \(task.isComplete ? "Yes" : "No")")
             }
-
+            
             Spacer()
-
+            
             Button(role: .destructive) {
                 showingDeleteAlert = true
             } label: {
@@ -45,7 +45,7 @@ struct TaskDetailView: View {
             }
         }
         .sheet(isPresented: $showingEdit) {
-            TaskFormView(pet: task.taskPet!)
+            TaskFormView(pet: task.taskPet!, existingTask: task)
                 .environment(\.managedObjectContext, context)
                 .environmentObject(PetCareViewModel())
         }
@@ -58,10 +58,17 @@ struct TaskDetailView: View {
             Text("This action cannot be undone.")
         }
     }
-
+    
     private func deleteTask() {
         dismiss()
         context.delete(task)
         try? context.save()
+    }
+}
+
+#Preview {
+    NavigationView {
+        TaskDetailView(task: Task.example)
+            .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
     }
 }
