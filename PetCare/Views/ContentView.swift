@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var petViewModel = PetCareViewModel()
+    @StateObject var petCareViewModel = PetCareViewModel()
     @Environment(\.managedObjectContext) private var context
     @State private var isProfileMenuOpen = false
     
     var body: some View {
         NavigationView {
             HomeView()
-                .environmentObject(petViewModel)
+                .environmentObject(petCareViewModel)
                 .navigationBarTitle("Pet Care", displayMode: .large)
                 .navigationBarItems(trailing: Button(action: {
                     isProfileMenuOpen.toggle()
@@ -18,11 +18,11 @@ struct ContentView: View {
                 })
                 .sheet(isPresented: $isProfileMenuOpen) {
                     ProfileView()
-                        .environmentObject(petViewModel)
+                        .environmentObject(petCareViewModel)
                 }
         }
         .onAppear {
-            petViewModel.fetchPets(context: context)
+            petCareViewModel.fetchPets(context: context)
         }
     }
 }

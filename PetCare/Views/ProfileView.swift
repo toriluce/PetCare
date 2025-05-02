@@ -1,16 +1,19 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @EnvironmentObject var petViewModel: PetCareViewModel
+    @EnvironmentObject var petCareViewModel: PetCareViewModel
     @Environment(\.managedObjectContext) private var context
     
     @State private var showingAddPet = false
+    @State private var selectedPet: Pet?
+    @State private var petToDelete: Pet?
+    @State private var showDeleteAlert = false
     
     var body: some View {
         NavigationView {
             List {
                 Section(header: Text("Your Pets")) {
-                    ForEach(petViewModel.pets, id: \.id) { pet in
+                    ForEach(petCareViewModel.pets, id: \.id) { pet in
                         VStack(alignment: .leading) {
                             Text(pet.name)
                                 .font(.headline)
@@ -18,8 +21,23 @@ struct ProfileView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                petToDelete = pet
+                                showDeleteAlert = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            Button {
+                                selectedPet = pet
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                        }
                     }
-                    
                 }
             }
             .navigationTitle("Profile")
@@ -33,12 +51,12 @@ struct ProfileView: View {
                 }
             }
             .sheet(isPresented: $showingAddPet) {
-                AddPetView()
-                    .environmentObject(petViewModel)
+                PetFormView()
+                    .environmentObject(petCareViewModel)
                     .environment(\.managedObjectContext, context)
             }
             .onAppear {
-                petViewModel.fetchPets(context: context)
+                petCareViewModel.fetchPets(context: context)
             }
         }
     }

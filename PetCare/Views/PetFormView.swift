@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct AddPetView: View {
+struct PetFormView: View {
     @Environment(\.managedObjectContext) private var context
-    @EnvironmentObject var petViewModel: PetCareViewModel
+    @EnvironmentObject var petCareViewModel: PetCareViewModel
     @Environment(\.dismiss) private var dismiss
     
     @State private var name = ""
@@ -24,7 +24,7 @@ struct AddPetView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        petViewModel.addPet(name: name, breed: breed, species: species, birthday: birthday, context: context)
+                        petCareViewModel.addPet(name: name, breed: breed, species: species, birthday: birthday, context: context)
                         dismiss()
                     }
                 }
@@ -39,7 +39,7 @@ struct AddPetView: View {
 }
 
 #Preview {
-    AddPetView()
+    PetFormView()
         .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
         .environmentObject(PetCareViewModel())
 }

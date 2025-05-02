@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct AddTaskView: View {
+struct TaskFormView: View {
     @Environment(\.managedObjectContext) private var context
-    @EnvironmentObject var petViewModel: PetCareViewModel
+    @EnvironmentObject var petCareViewModel: PetCareViewModel
     @Environment(\.dismiss) private var dismiss
     
     var pet: Pet
@@ -26,7 +26,7 @@ struct AddTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        petViewModel.addTask(to: pet, title: title, details: details, dueDate: dueDate, isComplete: false, frequency: frequency, context: context)
+                        petCareViewModel.addTask(to: pet, title: title, details: details, dueDate: dueDate, isComplete: false, frequency: frequency, context: context)
                         dismiss()
                     }
                 }
@@ -41,7 +41,7 @@ struct AddTaskView: View {
 }
 
 #Preview {
-    AddTaskView(pet: Pet()) 
+    TaskFormView(pet: Pet()) 
         .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
         .environmentObject(PetCareViewModel())
 }

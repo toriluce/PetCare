@@ -1,20 +1,29 @@
 import SwiftUI
 
 struct HomeView: View {
-    @EnvironmentObject var petViewModel: PetCareViewModel
+    @EnvironmentObject var petCareViewModel: PetCareViewModel
     
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 16) {
-                    ForEach(petViewModel.pets, id: \.id) { pet in
-                        PetView(pet: pet)
-                            .environmentObject(petViewModel)
-                            .padding(.horizontal)
+                LazyVStack(spacing: 16) {
+                    if petCareViewModel.pets.isEmpty {
+                        Text("Add a pet from the profile tab to get started")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                    } else {
+                        ForEach(petCareViewModel.pets, id: \.id) { pet in
+                            PetView(pet: pet)
+                                .environmentObject(petCareViewModel)
+                                .padding(.horizontal)
+                        }
                     }
                 }
-                .padding(.top)
+                .padding(.vertical)
             }
+            .navigationTitle("My Pets")
         }
     }
 }
