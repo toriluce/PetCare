@@ -2,28 +2,26 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var petViewModel: PetViewModel
-    
+
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    ForEach(petViewModel.pets, id: \.id) { pet in
-                        PetView(pet: pet)
-                            .environmentObject(petViewModel)
-                            .padding(.horizontal)
-                    }
+        ScrollView {
+            VStack(spacing: 16) {
+                ForEach(petViewModel.pets, id: \ .id) { pet in
+                    PetView(pet: pet)
                 }
-                .padding(.top)
             }
+            .padding()
         }
     }
 }
 
 #Preview {
-    let previewViewModel = PetViewModel()
-    previewViewModel.pets = [PetEntity.example, PetEntity.example2]
+    let context = PreviewPersistenceController.shared.container.viewContext
+    let viewModel = PetViewModel()
     
+    viewModel.pets = [Pet.example, Pet.example2]
+
     return HomeView()
-        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-        .environmentObject(previewViewModel)
+        .environmentObject(viewModel)
+        .environment(\.managedObjectContext, context)
 }

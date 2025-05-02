@@ -2,28 +2,28 @@ import SwiftUI
 
 struct PetView: View {
     @EnvironmentObject var petViewModel: PetViewModel
+    @EnvironmentObject var taskViewModel: TaskViewModel
     @Environment(\.managedObjectContext) private var context
-    
-    var pet: PetEntity
-    
+
+    var pet: Pet
     @State private var showingAddTask = false
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(pet.name)
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .padding(.bottom, 5)
-            
-            TaskListView(tasks: Array(pet.tasks ?? []))
-            
+
+            TaskListView(for: pet)
+
             Button("Add Task") {
                 showingAddTask = true
             }
             .padding(.top)
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading) 
+//        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.secondarySystemBackground))
@@ -32,6 +32,7 @@ struct PetView: View {
         .padding(.horizontal, 16)
         .sheet(isPresented: $showingAddTask) {
             AddTaskView(pet: pet)
+                .environmentObject(taskViewModel)
                 .environmentObject(petViewModel)
                 .environment(\.managedObjectContext, context)
         }
@@ -39,7 +40,10 @@ struct PetView: View {
 }
 
 #Preview {
-    PetView(pet: PetEntity.example)
-        .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
-        .environmentObject(PetViewModel())
+    let context = PreviewPersistenceController.shared.container.viewContext
+    let pet = Pet.example
+
+    return TaskListView(for: pet)
+        .environment(\.managedObjectContext, context)
+        .environmentObject(TaskViewModel())
 }

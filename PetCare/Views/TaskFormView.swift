@@ -1,17 +1,22 @@
+
 import SwiftUI
 
-struct AddTaskView: View {
+struct TaskFormView: View {
     @Environment(\.managedObjectContext) private var context
-    @EnvironmentObject var petViewModel: PetViewModel
     @EnvironmentObject var taskViewModel: TaskViewModel
     @Environment(\.dismiss) private var dismiss
-    
+
     var pet: Pet
-    
+    var taskToEdit: Task? = nil
+
     @State private var title = ""
     @State private var details = ""
     @State private var frequency = Date()
-    
+
+    var isEditing: Bool {
+        taskToEdit != nil
+    }
+
     var body: some View {
         NavigationView {
             Form {
@@ -21,11 +26,15 @@ struct AddTaskView: View {
                     DatePicker("Frequency", selection: $frequency, displayedComponents: [.date])
                 }
             }
-            .navigationTitle("Add Task")
+            .navigationTitle(isEditing ? "Edit Task" : "Add Task")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        taskViewModel.addTask(to: pet, title: title, details: details, isComplete: false, frequency: frequency, context: context)
+                        if let task = taskToEdit {
+                            taskViewModel.updateTask(task, title: title, details: details, isComplete: task.isComplete, frequency: frequency, context: context)
+                        } else {
+                            taskViewModel.addTask(to: pet, title: title, details: details, isComplete: false, frequency: frequency, context: context)
+                        }
                         dismiss()
                     }
                 }
@@ -33,6 +42,13 @@ struct AddTaskView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                }
+            }
+            .onAppear {
+                if let task = taskToEdit {
+                    title = task.title
+                    details = task.details!
+                    frequency = task.frequency ?? Date()
                 }
             }
         }
