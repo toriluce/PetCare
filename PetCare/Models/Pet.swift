@@ -8,6 +8,7 @@ final class Pet: NSManagedObject {
     @NSManaged var birthday: Date
     @NSManaged var species: String
     @NSManaged var tasks: Set<Task>?
+    @NSManaged var logs: Set<Log>?
     
     override func awakeFromInsert() {
         super.awakeFromInsert()
@@ -18,7 +19,9 @@ final class Pet: NSManagedObject {
 extension Pet {
     static var example: Pet {
         let context = PreviewPersistenceController.shared.container.viewContext
+
         let pet = Pet(context: context)
+        pet.id = UUID()
         pet.name = "Brody"
         pet.breed = "Yorkie"
         pet.species = "Dog"
@@ -40,16 +43,17 @@ extension Pet {
         
         return pet
     }
-    
+
     static var example2: Pet {
         let context = PreviewPersistenceController.shared.container.viewContext
+
         let pet = Pet(context: context)
+        pet.id = UUID()
         pet.name = "Nala"
         pet.breed = "Shorthair"
         pet.species = "Cat"
         pet.birthday = Date()
-        pet.tasks = []
-        
+
         return pet
     }
 }

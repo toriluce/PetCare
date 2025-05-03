@@ -1,12 +1,12 @@
 import SwiftUI
+import CoreData
 
 struct PetView: View {
-    @EnvironmentObject var petCareViewModel: PetCareViewModel
     @Environment(\.managedObjectContext) private var context
     
     var pet: Pet
-    
     @State private var showingAddTask = false
+    
     @FetchRequest var tasks: FetchedResults<Task>
     
     init(pet: Pet) {
@@ -33,7 +33,7 @@ struct PetView: View {
             .padding(.top)
         }
         .padding()
-        .frame(maxWidth: .infinity, alignment: .leading) 
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.secondarySystemBackground))
@@ -41,7 +41,6 @@ struct PetView: View {
         )
         .sheet(isPresented: $showingAddTask) {
             TaskFormView(pet: pet)
-                .environmentObject(petCareViewModel)
                 .environment(\.managedObjectContext, context)
         }
     }
@@ -49,6 +48,5 @@ struct PetView: View {
 
 #Preview {
     PetView(pet: Pet.example)
-        .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
-        .environmentObject(PetCareViewModel())
+        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
 }

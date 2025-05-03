@@ -29,12 +29,13 @@ class PetCareViewModel: ObservableObject {
         }
     }
     
-    func addTask(to pet: Pet, title: String, details: String, isComplete: Bool, frequency: Date?, context: NSManagedObjectContext) {
+    func addTask(to pet: Pet, title: String, details: String, isComplete: Bool, frequency: String?, timeOfDay: Date?, context: NSManagedObjectContext) {
         let newTask = Task(context: context)
         newTask.title = title
         newTask.details = details
         newTask.isComplete = isComplete
         newTask.frequency = frequency
+        newTask.timeOfDay = timeOfDay
         newTask.taskPet = pet
         
         var taskSet = pet.tasks ?? []
@@ -63,11 +64,12 @@ class PetCareViewModel: ObservableObject {
         }
     }
     
-    func editTask(_ task: Task, title: String, details: String, isComplete: Bool, frequency: Date?, context: NSManagedObjectContext) {
+    func editTask(_ task: Task, title: String, details: String, isComplete: Bool, frequency: String?, timeOfDay: Date?, context: NSManagedObjectContext) {
         task.title = title
         task.details = details
         task.isComplete = isComplete
         task.frequency = frequency
+        task.timeOfDay = timeOfDay
         
         do {
             try context.save()
@@ -99,5 +101,36 @@ class PetCareViewModel: ObservableObject {
         } catch {
             print("Failed to delete task: \(error)")
         }
+    }
+    
+    func resetTasksIfNeeded(for pet: Pet, context: NSManagedObjectContext) {
+        let now = Date()
+        let calendar = Calendar.current
+        let resetTime = calendar.date(bySettingHour: 2, minute: 0, second: 0, of: now)!
+        
+        pet.tasks?.forEach { task in
+            if let lastDone = task.lastCompletedAt, lastDone < resetTime {
+                task.isComplete = false
+            }
+        }
+        
+        try? context.save()
+    }
+    
+    func completeTask(_ task: Task, context: NSManagedObjectContext) {
+        guard let pet = task.taskPet else {
+            print("Log Failed: Task has no associated pet.")
+            return
+        }
+        
+        task.isComplete = true
+        task.lastCompletedAt = Date()
+        
+        let log = Log(context: context)
+        log.timestamp = Date()
+        log.taskTitle = task.title
+        log.logPet = pet
+        
+        try? context.save()
     }
 }

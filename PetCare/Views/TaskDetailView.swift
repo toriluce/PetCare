@@ -22,7 +22,7 @@ struct TaskDetailView: View {
             
             Section(header: Text("Task").font(.headline)) {
                 Text("Title: \(task.title)")
-                Text("Details: \(task.details)")
+                Text("Details: \(task.details ?? "No details")")
                 Text("Completed: \(task.isComplete ? "Yes" : "No")")
             }
             

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 
 struct TaskFormView: View {
     @Environment(\.managedObjectContext) private var context
@@ -10,7 +11,8 @@ struct TaskFormView: View {
     
     @State private var title: String
     @State private var details: String
-    @State private var frequency: Date
+    @State private var recurrence: String
+    @State private var timeOfDay: Date
     
     var isEditing: Bool {
         existingTask != nil
@@ -22,7 +24,10 @@ struct TaskFormView: View {
         
         _title = State(initialValue: existingTask?.title ?? "")
         _details = State(initialValue: existingTask?.details ?? "")
-        _frequency = State(initialValue: existingTask?.frequency ?? Date())
+        _recurrence = State(initialValue: existingTask?.frequency ?? "never")
+        
+        let defaultTime = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: Date())!
+        _timeOfDay = State(initialValue: existingTask?.timeOfDay ?? defaultTime)
     }
     
     var body: some View {
@@ -31,7 +36,14 @@ struct TaskFormView: View {
                 Section(header: Text("Task Details")) {
                     TextField("Title", text: $title)
                     TextField("Details", text: $details)
-                    DatePicker("Frequency", selection: $frequency, displayedComponents: [.date])
+                    
+                    Picker("Frequency", selection: $recurrence) {
+                        Text("None").tag("never")
+                        Text("Daily").tag("daily")
+                        Text("Weekly").tag("weekly")
+                    }
+                    
+                    DatePicker("Time", selection: $timeOfDay, displayedComponents: [.hourAndMinute])
                 }
             }
             .navigationTitle(isEditing ? "Edit Task" : "Add Task")
@@ -39,9 +51,25 @@ struct TaskFormView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         if let task = existingTask {
-                            petCareViewModel.editTask(task, title: title, details: details, isComplete: task.isComplete, frequency: frequency, context: context)
+                            petCareViewModel.editTask(
+                                task,
+                                title: title,
+                                details: details,
+                                isComplete: task.isComplete,
+                                frequency: recurrence,
+                                timeOfDay: timeOfDay,
+                                context: context
+                            )
                         } else {
-                            petCareViewModel.addTask(to: pet, title: title, details: details, isComplete: false, frequency: frequency, context: context)
+                            petCareViewModel.addTask(
+                                to: pet,
+                                title: title,
+                                details: details,
+                                isComplete: false,
+                                frequency: recurrence,
+                                timeOfDay: timeOfDay,
+                                context: context
+                            )
                         }
                         dismiss()
                     }

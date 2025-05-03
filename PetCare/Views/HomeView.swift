@@ -1,22 +1,27 @@
 import SwiftUI
+import CoreData
 
 struct HomeView: View {
-    @EnvironmentObject var petCareViewModel: PetCareViewModel
+    @Environment(\.managedObjectContext) private var context
+    
+    @FetchRequest(
+        entity: Pet.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \Pet.name, ascending: true)]
+    ) var pets: FetchedResults<Pet>
     
     var body: some View {
         NavigationView {
             ScrollView {
                 LazyVStack(spacing: 16) {
-                    if petCareViewModel.pets.isEmpty {
+                    if pets.isEmpty {
                         Text("Add a pet from the profile tab to get started")
                             .font(.headline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                             .padding()
                     } else {
-                        ForEach(petCareViewModel.pets, id: \.id) { pet in
+                        ForEach(pets, id: \.id) { pet in
                             PetView(pet: pet)
-                                .environmentObject(petCareViewModel)
                                 .padding(.horizontal)
                         }
                     }
@@ -29,10 +34,6 @@ struct HomeView: View {
 }
 
 #Preview {
-    let previewViewModel = PetCareViewModel()
-    previewViewModel.pets = [Pet.example, Pet.example2]
-    
-    return HomeView()
+    HomeView()
         .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-        .environmentObject(previewViewModel)
 }

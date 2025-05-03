@@ -28,10 +28,16 @@ struct ContentView: View {
 }
 
 #Preview {
-    let previewModel = PetCareViewModel()
-    previewModel.pets = [Pet.example, Pet.example2]
-    
+    let context = PreviewPersistenceController.shared.container.viewContext
+
+    // Create example pets manually and add them to the view model
+    let pet1 = Pet.example
+    let pet2 = Pet.example2
+
+    let viewModel = PetCareViewModel()
+    viewModel.pets = [pet1, pet2]
+
     return ContentView()
-        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-        .environmentObject(previewModel)
+        .environment(\.managedObjectContext, context)
+        .environmentObject(viewModel)
 }

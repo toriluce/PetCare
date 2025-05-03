@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TaskView: View {
     @Environment(\.managedObjectContext) private var context
+    @EnvironmentObject var petCareViewModel: PetCareViewModel
     @ObservedObject var task: Task
     
     var body: some View {
@@ -20,10 +21,9 @@ struct TaskView: View {
                         .foregroundColor(task.isComplete ? .gray : .primary)
                         .strikethrough(task.isComplete, color: .gray)
                     
-                    if !task.details.isEmpty {
-                        Text(task.details)
+                    if let details = task.details, !details.isEmpty {
+                        Text(details)
                             .font(.subheadline)
-                            .multilineTextAlignment(.leading)
                             .foregroundColor(.secondary)
                     }
                 }
@@ -40,8 +40,7 @@ struct TaskView: View {
     }
     
     private func toggleComplete() {
-        task.isComplete.toggle()
-        try? context.save()
+        petCareViewModel.completeTask(task, context: context)
     }
 }
 
