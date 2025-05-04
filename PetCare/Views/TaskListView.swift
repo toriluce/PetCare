@@ -20,8 +20,3 @@ struct TaskListView: View {
         }
     }
 }
-
-#Preview {
-    TaskListView(tasks: [Task.example, Task.example2])
-        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-}

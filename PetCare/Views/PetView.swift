@@ -13,8 +13,8 @@ struct PetView: View {
         self.pet = pet
         _tasks = FetchRequest<Task>(
             entity: Task.entity(),
-            sortDescriptors: [NSSortDescriptor(keyPath: \Task.title, ascending: true)],
-            predicate: NSPredicate(format: "taskPet == %@", pet)
+            sortDescriptors: [NSSortDescriptor(keyPath: \Task.sortOrder, ascending: true)],
+            predicate: NSPredicate(format: "pet == %@", pet)
         )
     }
     
@@ -46,7 +46,3 @@ struct PetView: View {
     }
 }
 
-#Preview {
-    PetView(pet: Pet.example)
-        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-}

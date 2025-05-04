@@ -11,7 +11,7 @@ struct TaskDetailView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if let pet = task.taskPet {
+            if let pet = task.pet {
                 Section(header: Text("Pet Details").font(.headline)) {
                     Text("Name: \(pet.name)")
                     Text("Breed: \(pet.breed)")
@@ -45,7 +45,7 @@ struct TaskDetailView: View {
             }
         }
         .sheet(isPresented: $showingEdit) {
-            TaskFormView(pet: task.taskPet!, existingTask: task)
+            TaskFormView(pet: task.pet!, existingTask: task)
                 .environment(\.managedObjectContext, context)
                 .environmentObject(PetCareViewModel())
         }
@@ -66,9 +66,3 @@ struct TaskDetailView: View {
     }
 }
 
-#Preview {
-    NavigationView {
-        TaskDetailView(task: Task.example)
-            .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-    }
-}

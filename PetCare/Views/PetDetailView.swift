@@ -5,10 +5,12 @@ struct PetDetailView: View {
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var petCareViewModel: PetCareViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.editMode) private var editMode
     
     @State private var showingAddTask = false
     @State private var showingEditForm = false
     @State private var showDeleteAlert = false
+    @State private var editableTasks: [Task] = []
     
     var pet: Pet
     
@@ -19,13 +21,13 @@ struct PetDetailView: View {
         self.pet = pet
         _tasks = FetchRequest<Task>(
             entity: Task.entity(),
-            sortDescriptors: [NSSortDescriptor(keyPath: \Task.title, ascending: true)],
-            predicate: NSPredicate(format: "taskPet == %@", pet)
+            sortDescriptors: [NSSortDescriptor(keyPath: \Task.sortOrder, ascending: true)],
+            predicate: NSPredicate(format: "pet == %@", pet)
         )
         _logs = FetchRequest<Log>(
             entity: Log.entity(),
             sortDescriptors: [NSSortDescriptor(keyPath: \Log.timestamp, ascending: false)],
-            predicate: NSPredicate(format: "logPet == %@", pet)
+            predicate: NSPredicate(format: "pet == %@", pet)
         )
     }
     
@@ -35,15 +37,13 @@ struct PetDetailView: View {
                 taskSection
                 logSection
                 petInfoSection
-                
+                contactsSection
                 HStack {
                     Button("Edit Pet Info") {
                         showingEditForm = true
                     }
                     .buttonStyle(.bordered)
-                    
                     Spacer()
-                    
                     Button("Delete Pet Profile", role: .destructive) {
                         showDeleteAlert = true
                     }
@@ -55,7 +55,13 @@ struct PetDetailView: View {
         }
         .navigationTitle(pet.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                EditButton()
+            }
+        }
         .onAppear {
+            editableTasks = tasks.sorted { $0.sortOrder < $1.sortOrder }
             petCareViewModel.resetTasksIfNeeded(for: pet, context: context)
         }
         .sheet(isPresented: $showingEditForm) {
@@ -94,24 +100,37 @@ struct PetDetailView: View {
             Text("Tasks")
                 .font(.headline)
             
-            if tasks.isEmpty {
+            if editableTasks.isEmpty {
                 Text("No tasks yet.")
                     .foregroundColor(.secondary)
             } else {
-                ForEach(tasks) { task in
-                    NavigationLink(destination: TaskDetailView(task: task)) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(task.title)
-                                .font(.body)
-                            if let time = task.timeOfDay {
-                                Text("Time: \(time.formatted(date: .omitted, time: .shortened))")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                List {
+                    ForEach(editableTasks, id: \.self) { task in
+                        NavigationLink(destination: TaskDetailView(task: task)) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(task.title)
+                                    .font(.body)
+                                if let time = task.timeOfDay {
+                                    Text("Time: \(time.formatted(date: .omitted, time: .shortened))")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
+                    }
+                    .onMove(perform: moveTask)
+                }
+                .environment(\.editMode, editMode)
+                .frame(height: CGFloat(editableTasks.count * 60))
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(editMode?.wrappedValue == .active ? "Done" : "Reorder") {
+                            editMode?.wrappedValue = editMode?.wrappedValue == .active ? .inactive : .active
+                        }
                     }
                 }
+                
             }
         }
     }
@@ -133,12 +152,48 @@ struct PetDetailView: View {
         }
         .padding(.top, 10)
     }
-}
-
-#Preview {
-    NavigationView {
-        PetDetailView(pet: Pet.example)
-            .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-            .environmentObject(PetCareViewModel())
+    
+    private var contactsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Contacts")
+                .font(.headline)
+            
+            if pet.sortedContacts.isEmpty {
+                Text("No contacts available.")
+                    .foregroundColor(.secondary)
+            } else {
+                ForEach(pet.sortedContacts, id: \.id) { contact in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(contact.title)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        
+                        if let phone = contact.phoneNumber, !phone.isEmpty {
+                            Text("📞 \(phone)")
+                        }
+                        
+                        if let address = contact.address, !address.isEmpty {
+                            Text("\(address)")
+                        }
+                        
+                        if let url = contact.websiteURL, let link = URL(string: url) {
+                            Link("Website", destination: link)
+                        }
+                    }
+                    .padding(.bottom, 6)
+                }
+            }
+        }
+        .padding(.top, 10)
+    }
+    
+    private func moveTask(from source: IndexSet, to destination: Int) {
+        editableTasks.move(fromOffsets: source, toOffset: destination)
+        
+        for (index, task) in editableTasks.enumerated() {
+            task.sortOrder = Int64(index)
+        }
+        
+        try? context.save()
     }
 }

@@ -1,7 +1,7 @@
 import Foundation
 import CoreData
 
-final class Pet: NSManagedObject {
+final class Pet: NSManagedObject, Identifiable {
     @NSManaged var id: UUID
     @NSManaged var name: String
     @NSManaged var breed: String
@@ -9,51 +9,40 @@ final class Pet: NSManagedObject {
     @NSManaged var species: String
     @NSManaged var tasks: Set<Task>?
     @NSManaged var logs: Set<Log>?
-    
+    @NSManaged var contacts: Set<Contact>?
+    @NSManaged var appointments: Set<Appointment>?
+
     override func awakeFromInsert() {
         super.awakeFromInsert()
         setPrimitiveValue(UUID(), forKey: "id")
     }
-}
 
-extension Pet {
-    static var example: Pet {
-        let context = PreviewPersistenceController.shared.container.viewContext
-
-        let pet = Pet(context: context)
-        pet.id = UUID()
-        pet.name = "Brody"
-        pet.breed = "Yorkie"
-        pet.species = "Dog"
-        pet.birthday = Date()
-        
-        let task1 = Task(context: context)
-        task1.title = "Breakfast"
-        task1.details = "Dog food is in the pantry. Use half a can and one scoop."
-        task1.isComplete = false
-        task1.taskPet = pet
-        
-        let task2 = Task(context: context)
-        task2.title = "Dinner"
-        task2.details = "Dog food is in the pantry. Use half a can and one scoop."
-        task2.isComplete = false
-        task2.taskPet = pet
-        
-        pet.tasks = [task1, task2]
-        
-        return pet
+    var nextAppointment: Date? {
+        appointments?
+            .filter { $0.date >= Date() }
+            .sorted { $0.date < $1.date }
+            .first?.date
     }
 
-    static var example2: Pet {
-        let context = PreviewPersistenceController.shared.container.viewContext
+    var sortedContacts: [Contact] {
+        contacts?.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending } ?? []
+    }
 
-        let pet = Pet(context: context)
-        pet.id = UUID()
-        pet.name = "Nala"
-        pet.breed = "Shorthair"
-        pet.species = "Cat"
-        pet.birthday = Date()
+    var sortedAppointments: [Appointment] {
+        appointments?.sorted(by: { $0.date < $1.date }) ?? []
+    }
+    var vaccinesDueSoon: [Vaccine] {
+        guard let allVaccines = appointments?.flatMap({ $0.vaccines ?? [] }) else {
+            return []
+        }
 
-        return pet
+        let now = Date()
+        return Array(Set(allVaccines)).filter { vaccine in
+            guard let last = vaccine.lastAdministered else { return true }
+            guard let dueDate = Calendar.current.date(byAdding: .day, value: Int(vaccine.intervalInDays), to: last) else {
+                return true
+            }
+            return dueDate <= now
+        }
     }
 }

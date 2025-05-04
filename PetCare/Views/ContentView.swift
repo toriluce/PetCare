@@ -4,40 +4,49 @@ struct ContentView: View {
     @StateObject var petCareViewModel = PetCareViewModel()
     @Environment(\.managedObjectContext) private var context
     @State private var isProfileMenuOpen = false
+    @State private var showAppointments = false
     
     var body: some View {
         NavigationView {
             HomeView()
                 .environmentObject(petCareViewModel)
-                .navigationBarTitle("Pet Care", displayMode: .large)
-                .navigationBarItems(trailing: Button(action: {
-                    isProfileMenuOpen.toggle()
-                }) {
-                    Image(systemName: "person.crop.circle")
-                        .font(.title)
-                })
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            showAppointments = true
+                        }) {
+                            Image(systemName: "calendar")
+                                .font(.title2)
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .principal) {
+                        Text("My Pets")
+                            .font(.headline)
+                    }
+                    
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            isProfileMenuOpen = true
+                        }) {
+                            Image(systemName: "person.crop.circle")
+                                .font(.title2)
+                        }
+                    }
+                }
                 .sheet(isPresented: $isProfileMenuOpen) {
                     ProfileView()
+                        .environment(\.managedObjectContext, context)
                         .environmentObject(petCareViewModel)
+                }
+                .sheet(isPresented: $showAppointments) {
+                    AppointmentsView(pets: petCareViewModel.pets)
+                        .environment(\.managedObjectContext, context)
                 }
         }
         .onAppear {
             petCareViewModel.fetchPets(context: context)
         }
     }
-}
-
-#Preview {
-    let context = PreviewPersistenceController.shared.container.viewContext
-
-    // Create example pets manually and add them to the view model
-    let pet1 = Pet.example
-    let pet2 = Pet.example2
-
-    let viewModel = PetCareViewModel()
-    viewModel.pets = [pet1, pet2]
-
-    return ContentView()
-        .environment(\.managedObjectContext, context)
-        .environmentObject(viewModel)
 }

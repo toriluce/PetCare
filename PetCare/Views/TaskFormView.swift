@@ -1,6 +1,18 @@
 import SwiftUI
 import CoreData
 
+enum TaskFrequency: String, CaseIterable {
+    case never, daily, weekly
+    
+    var label: String {
+        switch self {
+        case .never: return "None"
+        case .daily: return "Daily"
+        case .weekly: return "Weekly"
+        }
+    }
+}
+
 struct TaskFormView: View {
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var petCareViewModel: PetCareViewModel
@@ -11,7 +23,7 @@ struct TaskFormView: View {
     
     @State private var title: String
     @State private var details: String
-    @State private var recurrence: String
+    @State private var recurrence: TaskFrequency
     @State private var timeOfDay: Date
     
     var isEditing: Bool {
@@ -24,7 +36,7 @@ struct TaskFormView: View {
         
         _title = State(initialValue: existingTask?.title ?? "")
         _details = State(initialValue: existingTask?.details ?? "")
-        _recurrence = State(initialValue: existingTask?.frequency ?? "never")
+        _recurrence = State(initialValue: TaskFrequency(rawValue: existingTask?.frequency ?? "") ?? .never)
         
         let defaultTime = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: Date())!
         _timeOfDay = State(initialValue: existingTask?.timeOfDay ?? defaultTime)
@@ -35,13 +47,18 @@ struct TaskFormView: View {
             Form {
                 Section(header: Text("Task Details")) {
                     TextField("Title", text: $title)
+                        .autocapitalization(.sentences)
+                        .disableAutocorrection(true)
+                    
                     TextField("Details", text: $details)
+                        .autocapitalization(.sentences)
                     
                     Picker("Frequency", selection: $recurrence) {
-                        Text("None").tag("never")
-                        Text("Daily").tag("daily")
-                        Text("Weekly").tag("weekly")
+                        ForEach(TaskFrequency.allCases, id: \.self) { freq in
+                            Text(freq.label).tag(freq)
+                        }
                     }
+                    .pickerStyle(SegmentedPickerStyle())
                     
                     DatePicker("Time", selection: $timeOfDay, displayedComponents: [.hourAndMinute])
                 }
@@ -50,30 +67,20 @@ struct TaskFormView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        if let task = existingTask {
-                            petCareViewModel.editTask(
-                                task,
-                                title: title,
-                                details: details,
-                                isComplete: task.isComplete,
-                                frequency: recurrence,
-                                timeOfDay: timeOfDay,
-                                context: context
-                            )
-                        } else {
-                            petCareViewModel.addTask(
-                                to: pet,
-                                title: title,
-                                details: details,
-                                isComplete: false,
-                                frequency: recurrence,
-                                timeOfDay: timeOfDay,
-                                context: context
-                            )
-                        }
+                        _ = petCareViewModel.addOrEditTask(
+                            for: pet,
+                            existingTask: existingTask,
+                            title: title,
+                            details: details,
+                            isComplete: existingTask?.isComplete ?? false,
+                            frequency: recurrence.rawValue,
+                            timeOfDay: timeOfDay,
+                            context: context
+                        )
                         dismiss()
                     }
                 }
+                
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -82,10 +89,4 @@ struct TaskFormView: View {
             }
         }
     }
-}
-
-#Preview {
-    TaskFormView(pet: Pet.example, existingTask: Task.example)
-        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-        .environmentObject(PetCareViewModel())
 }

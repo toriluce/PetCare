@@ -12,8 +12,11 @@ struct PetFormView: View {
     @State private var species = ""
     @State private var birthday = Date()
     
-    var isEditing: Bool {
-        existingPet != nil
+    @State private var showContactForm = false
+    @State private var selectedContact: Contact?
+    
+    var contacts: [Contact] {
+        existingPet?.contacts?.sorted { $0.title < $1.title } ?? []
     }
     
     var body: some View {
@@ -25,8 +28,32 @@ struct PetFormView: View {
                     TextField("Species", text: $species)
                     DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
                 }
+                
+                if existingPet != nil {
+                    Section(header: Text("Contacts")) {
+                        ForEach(contacts, id: \.id) { contact in
+                            VStack(alignment: .leading) {
+                                Text(contact.title).font(.headline)
+                                if let phone = contact.phoneNumber { Text("Phone: \(phone)") }
+                                if let address = contact.address { Text("Address: \(address)") }
+                                if let site = contact.websiteURL {
+                                    Link("Website", destination: URL(string: site)!)
+                                }
+                            }
+                            .onTapGesture {
+                                selectedContact = contact
+                                showContactForm = true
+                            }
+                        }
+                        
+                        Button("Add Contact") {
+                            selectedContact = nil
+                            showContactForm = true
+                        }
+                    }
+                }
             }
-            .navigationTitle(isEditing ? "Edit Pet" : "Add Pet")
+            .navigationTitle(existingPet == nil ? "Add Pet" : "Edit Pet")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
@@ -38,10 +65,17 @@ struct PetFormView: View {
                         dismiss()
                     }
                 }
+                
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
+                }
+            }
+            .sheet(isPresented: $showContactForm) {
+                if let pet = existingPet {
+                    ContactFormView(pet: pet, existingContact: selectedContact)
+                        .environment(\.managedObjectContext, context)
                 }
             }
             .onAppear {
@@ -54,10 +88,4 @@ struct PetFormView: View {
             }
         }
     }
-}
-
-#Preview {
-    PetFormView()
-        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-        .environmentObject(PetCareViewModel())
 }

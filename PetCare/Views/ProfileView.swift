@@ -29,6 +29,10 @@ struct ProfileView: View {
                         }
                     }
                 }
+#if DEBUG
+                NotificationDebugView()
+#endif
+                
             }
             .navigationTitle("Profile")
             .toolbar {
@@ -46,9 +50,4 @@ struct ProfileView: View {
             }
         }
     }
-}
-
-#Preview {
-    ProfileView()
-        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
 }

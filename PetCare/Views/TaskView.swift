@@ -43,8 +43,3 @@ struct TaskView: View {
         petCareViewModel.completeTask(task, context: context)
     }
 }
-
-#Preview {
-    TaskView(task: Task.example)
-        .environment(\.managedObjectContext, PreviewPersistenceController.shared.container.viewContext)
-}

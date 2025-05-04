@@ -3,7 +3,11 @@ import SwiftUI
 @main
 struct PetCareApp: App {
     let persistenceController = PersistenceController.shared
-
+    
+    init() {
+        TaskNotificationManager.shared.requestPermission()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
