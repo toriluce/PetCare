@@ -6,6 +6,7 @@ final class Pet: NSManagedObject, Identifiable {
     @NSManaged var name: String
     @NSManaged var breed: String
     @NSManaged var birthday: Date
+    @NSManaged var notes: String?
     @NSManaged var species: String
     @NSManaged var tasks: Set<Task>?
     @NSManaged var logs: Set<Log>?

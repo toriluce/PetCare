@@ -14,12 +14,13 @@ class PetCareViewModel: ObservableObject {
         }
     }
 
-    func addPet(name: String, breed: String, species: String, birthday: Date?, context: NSManagedObjectContext) {
+    func addPet(name: String, breed: String, species: String, birthday: Date?, notes: String?, context: NSManagedObjectContext) {
         let newPet = Pet(context: context)
         newPet.name = name
         newPet.breed = breed
         newPet.species = species
         newPet.birthday = birthday ?? Date()
+        newPet.notes = notes ?? ""
 
         do {
             try context.save()
@@ -70,11 +71,12 @@ class PetCareViewModel: ObservableObject {
         return task
     }
 
-    func editPet(_ pet: Pet, name: String, breed: String, species: String, birthday: Date, context: NSManagedObjectContext) {
+    func editPet(_ pet: Pet, name: String, breed: String, species: String, birthday: Date, notes: String, context: NSManagedObjectContext) {
         pet.name = name
         pet.breed = breed
         pet.species = species
         pet.birthday = birthday
+        pet.notes = notes
 
         do {
             try context.save()

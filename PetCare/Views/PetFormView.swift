@@ -11,6 +11,7 @@ struct PetFormView: View {
     @State private var breed = ""
     @State private var species = ""
     @State private var birthday = Date()
+    @State private var notes = ""
     
     @State private var showContactForm = false
     @State private var selectedContact: Contact?
@@ -27,6 +28,7 @@ struct PetFormView: View {
                     TextField("Breed", text: $breed)
                     TextField("Species", text: $species)
                     DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
+                    TextField("Notes", text: $notes)
                 }
                 
                 if existingPet != nil {
@@ -58,9 +60,9 @@ struct PetFormView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         if let pet = existingPet {
-                            petCareViewModel.editPet(pet, name: name, breed: breed, species: species, birthday: birthday, context: context)
+                            petCareViewModel.editPet(pet, name: name, breed: breed, species: species, birthday: birthday, notes: notes, context: context)
                         } else {
-                            petCareViewModel.addPet(name: name, breed: breed, species: species, birthday: birthday, context: context)
+                            petCareViewModel.addPet(name: name, breed: breed, species: species, birthday: birthday, notes: notes, context: context)
                         }
                         dismiss()
                     }
@@ -84,6 +86,7 @@ struct PetFormView: View {
                     breed = pet.breed
                     species = pet.species
                     birthday = pet.birthday
+                    notes = pet.notes ?? ""
                 }
             }
         }

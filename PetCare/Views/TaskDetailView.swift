@@ -17,6 +17,7 @@ struct TaskDetailView: View {
                     Text("Breed: \(pet.breed)")
                     Text("Species: \(pet.species)")
                     Text("Birthday: \(pet.birthday.formatted(date: .abbreviated, time: .omitted))")
+                    Text("Notes: \(pet.notes ?? "")")
                 }
             }
             

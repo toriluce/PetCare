@@ -2,7 +2,7 @@ import SwiftUI
 
 struct NotificationDebugView: View {
     var body: some View {
-        Section(header: Text("Development-Only Notification Debug")) {
+        Section(header: Text("🍓Development-Only🐞")) {
             Button("Request Permission") {
                 TaskNotificationManager.shared.requestPermission()
             }
