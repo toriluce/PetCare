@@ -12,6 +12,7 @@ struct PetCareApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .tint(Color.purple)
         }
     }
 }

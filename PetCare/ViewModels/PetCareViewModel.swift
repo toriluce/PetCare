@@ -36,7 +36,7 @@ class PetCareViewModel: ObservableObject {
         title: String,
         details: String,
         isComplete: Bool,
-        frequency: String?,
+        repeatFrequency: String?,
         timeOfDay: Date?,
         context: NSManagedObjectContext
     ) -> Task {
@@ -45,7 +45,7 @@ class PetCareViewModel: ObservableObject {
         task.title = title
         task.details = details
         task.isComplete = isComplete
-        task.frequency = frequency
+        task.repeatFrequency = repeatFrequency
         task.timeOfDay = timeOfDay
         task.pet = pet
 

@@ -6,7 +6,7 @@ final class Task: NSManagedObject, Identifiable {
     @NSManaged var title: String
     @NSManaged var details: String?
     @NSManaged var isComplete: Bool
-    @NSManaged var frequency: String?
+    @NSManaged var repeatFrequency: String?
     @NSManaged var timeOfDay: Date?
     @NSManaged var lastCompletedAt: Date?
     @NSManaged var pet: Pet?

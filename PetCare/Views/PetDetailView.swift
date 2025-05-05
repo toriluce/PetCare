@@ -7,10 +7,11 @@ struct PetDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.editMode) private var editMode
     
-    @State private var showingAddTask = false
     @State private var showingEditForm = false
     @State private var showDeleteAlert = false
+    @State private var showingFullLog = false
     @State private var editableTasks: [Task] = []
+    @State private var showingContactForm = false
     
     var pet: Pet
     
@@ -34,16 +35,19 @@ struct PetDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                taskSection
-                logSection
+                
                 petInfoSection
                 contactsSection
+                logSection
+                
                 HStack {
                     Button("Edit Pet Info") {
                         showingEditForm = true
                     }
                     .buttonStyle(.bordered)
+                    
                     Spacer()
+                    
                     Button("Delete Pet Profile", role: .destructive) {
                         showDeleteAlert = true
                     }
@@ -55,24 +59,9 @@ struct PetDetailView: View {
         }
         .navigationTitle(pet.name)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                EditButton()
-            }
-        }
-        .onAppear {
-            editableTasks = tasks.sorted { $0.sortOrder < $1.sortOrder }
-            petCareViewModel.resetTasksIfNeeded(for: pet, context: context)
-        }
-        .sheet(isPresented: $showingEditForm) {
-            PetFormView(existingPet: pet)
+        .sheet(isPresented: $showingFullLog) {
+            TaskLogView(pet: pet)
                 .environment(\.managedObjectContext, context)
-                .environmentObject(petCareViewModel)
-        }
-        .sheet(isPresented: $showingAddTask) {
-            TaskFormView(pet: pet)
-                .environment(\.managedObjectContext, context)
-                .environmentObject(petCareViewModel)
         }
         .alert("Delete Pet Profile", isPresented: $showDeleteAlert) {
             Button("Delete", role: .destructive) {
@@ -86,115 +75,94 @@ struct PetDetailView: View {
     }
     
     private var petInfoSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Breed: \(pet.breed)")
-            Text("Species: \(pet.species)")
-            Text("Birthday: \(pet.birthday.formatted(date: .abbreviated, time: .omitted))")
-            Text("Notes: \(pet.notes ?? "")")
+        GroupBox(label: Label("Pet Info", systemImage: "pawprint")) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Breed: \(pet.breed)")
+                Text("Species: \(pet.species)")
+                Text("Birthday: \(pet.birthday.formatted(date: .abbreviated, time: .omitted))")
+                if let notes = pet.notes, !notes.isEmpty {
+                    Text("Notes: \(notes)")
+                }
+            }
+            .font(.subheadline)
+            .foregroundColor(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 4)
         }
-        .font(.subheadline)
-        .foregroundColor(.secondary)
     }
     
-    private var taskSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Tasks")
-                .font(.headline)
-            
-            if editableTasks.isEmpty {
-                Text("No tasks yet.")
-                    .foregroundColor(.secondary)
-            } else {
-                List {
-                    ForEach(editableTasks, id: \.self) { task in
-                        NavigationLink(destination: TaskDetailView(task: task)) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(task.title)
-                                    .font(.body)
-                                if let time = task.timeOfDay {
-                                    Text("Time: \(time.formatted(date: .omitted, time: .shortened))")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
+    private var contactsSection: some View {
+        GroupBox(label: Label("Contacts", systemImage: "person.crop.circle")) {
+            VStack(alignment: .leading, spacing: 6) {
+                if pet.sortedContacts.isEmpty {
+                    Text("No contacts available.")
+                        .foregroundColor(.secondary)
+                } else {
+                    ForEach(pet.sortedContacts, id: \.id) { contact in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(contact.title)
+                                .fontWeight(.semibold)
+                            
+                            if let phone = contact.phoneNumber, !phone.isEmpty {
+                                Text("Phone Number: \(phone)")
                             }
-                            .padding(.vertical, 4)
+                            
+                            if let address = contact.address, !address.isEmpty {
+                                Text("Address: \(address)")
+                            }
+                            
+                            if let url = contact.websiteURL, let link = URL(string: url) {
+                                Link("Website", destination: link)
+                            }
                         }
-                    }
-                    .onMove(perform: moveTask)
-                }
-                .environment(\.editMode, editMode)
-                .frame(height: CGFloat(editableTasks.count * 60))
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(editMode?.wrappedValue == .active ? "Done" : "Reorder") {
-                            editMode?.wrappedValue = editMode?.wrappedValue == .active ? .inactive : .active
-                        }
+                        .padding(.top, 4)
                     }
                 }
                 
+                Button("Add Contact") {
+                    showingContactForm = true
+                }
+                .font(.subheadline)
+                .padding(.top, 6)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .sheet(isPresented: $showingContactForm) {
+            ContactFormView(pet: pet)
+                .environment(\.managedObjectContext, context)
         }
     }
     
     private var logSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Task Log")
-                .font(.headline)
-            
-            if logs.isEmpty {
-                Text("No completed tasks yet.")
-                    .foregroundColor(.secondary)
-            } else {
-                ForEach(logs) { log in
-                    Text("Task: \(log.taskTitle) was completed on \(log.timestamp.formatted(date: .abbreviated, time: .shortened))")
-                        .font(.subheadline)
-                }
-            }
-        }
-        .padding(.top, 10)
-    }
-    
-    private var contactsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Contacts")
-                .font(.headline)
-            
-            if pet.sortedContacts.isEmpty {
-                Text("No contacts available.")
-                    .foregroundColor(.secondary)
-            } else {
-                ForEach(pet.sortedContacts, id: \.id) { contact in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(contact.title)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        
-                        if let phone = contact.phoneNumber, !phone.isEmpty {
-                            Text("📞 \(phone)")
-                        }
-                        
-                        if let address = contact.address, !address.isEmpty {
-                            Text("\(address)")
-                        }
-                        
-                        if let url = contact.websiteURL, let link = URL(string: url) {
-                            Link("Website", destination: link)
+        GroupBox(label: Label("Recently Completed Tasks", systemImage: "checkmark.circle")) {
+            VStack(alignment: .leading, spacing: 6) {
+                if logs.isEmpty {
+                    Text("No completed tasks yet.")
+                        .foregroundColor(.secondary)
+                } else {
+                    let recentLogs = logs.prefix(3)
+                    
+                    ForEach(recentLogs) { log in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(log.taskTitle)
+                                .fontWeight(.semibold)
+                            Text("Completed on \(log.timestamp.formatted(date: .abbreviated, time: .shortened))")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
                         }
                     }
-                    .padding(.bottom, 6)
+                    
+                    if logs.count > 3 {
+                        Button("View All Logs") {
+                            showingFullLog = true
+                        }
+                        .font(.subheadline)
+                        .padding(.top, 4)
+                    }
                 }
             }
+            .padding(.top, 4)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.top, 10)
-    }
-    
-    private func moveTask(from source: IndexSet, to destination: Int) {
-        editableTasks.move(fromOffsets: source, toOffset: destination)
-        
-        for (index, task) in editableTasks.enumerated() {
-            task.sortOrder = Int64(index)
-        }
-        
-        try? context.save()
     }
 }

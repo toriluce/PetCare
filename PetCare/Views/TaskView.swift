@@ -21,13 +21,25 @@ struct TaskView: View {
                         .foregroundColor(task.isComplete ? .gray : .primary)
                         .strikethrough(task.isComplete, color: .gray)
                     
-                    if let details = task.details, !details.isEmpty {
-                        Text(details)
+                    if let repeatFrequency = task.repeatFrequency, repeatFrequency != "never" {
+                        if let time = task.timeOfDay {
+                            Text("\(repeatFrequency.capitalized) at \(time.formatted(date: .omitted, time: .shortened))")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text(repeatFrequency.capitalized)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    } else if let time = task.timeOfDay {
+                        Text(time.formatted(date: .omitted, time: .shortened))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
                 }
                 Spacer()
+                Image(systemName: "chevron.right")
+                        .foregroundColor(.gray)
             }
             .padding()
             .background(

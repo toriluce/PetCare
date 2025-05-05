@@ -6,7 +6,7 @@ enum TaskFrequency: String, CaseIterable {
     
     var label: String {
         switch self {
-        case .never: return "None"
+        case .never: return "Never"
         case .daily: return "Daily"
         case .weekly: return "Weekly"
         }
@@ -24,7 +24,8 @@ struct TaskFormView: View {
     @State private var title: String
     @State private var details: String
     @State private var recurrence: TaskFrequency
-    @State private var timeOfDay: Date
+    @State private var timeOfDay: Date?
+    @State private var includeTimeOfDay: Bool
     
     var isEditing: Bool {
         existingTask != nil
@@ -36,10 +37,11 @@ struct TaskFormView: View {
         
         _title = State(initialValue: existingTask?.title ?? "")
         _details = State(initialValue: existingTask?.details ?? "")
-        _recurrence = State(initialValue: TaskFrequency(rawValue: existingTask?.frequency ?? "") ?? .never)
+        _recurrence = State(initialValue: TaskFrequency(rawValue: existingTask?.repeatFrequency ?? "") ?? .never)
         
         let defaultTime = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: Date())!
         _timeOfDay = State(initialValue: existingTask?.timeOfDay ?? defaultTime)
+        _includeTimeOfDay = State(initialValue: existingTask?.timeOfDay != nil)
     }
     
     var body: some View {
@@ -53,15 +55,21 @@ struct TaskFormView: View {
                     TextField("Details", text: $details)
                         .autocapitalization(.sentences)
                     
-                    Picker("Frequency", selection: $recurrence) {
+                    Picker("Repeat", selection: $recurrence) {
                         ForEach(TaskFrequency.allCases, id: \.self) { freq in
                             Text(freq.label).tag(freq)
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     
-                    DatePicker("Time", selection: $timeOfDay, displayedComponents: [.hourAndMinute])
-                }
+                    Toggle("Set Time of Day", isOn: $includeTimeOfDay)
+
+                    if includeTimeOfDay {
+                        DatePicker("Time", selection: Binding(
+                            get: { timeOfDay ?? Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: Date())! },
+                            set: { timeOfDay = $0 }
+                        ), displayedComponents: [.hourAndMinute])
+                    }                }
             }
             .navigationTitle(isEditing ? "Edit Task" : "Add Task")
             .toolbar {
@@ -73,8 +81,8 @@ struct TaskFormView: View {
                             title: title,
                             details: details,
                             isComplete: existingTask?.isComplete ?? false,
-                            frequency: recurrence.rawValue,
-                            timeOfDay: timeOfDay,
+                            repeatFrequency: recurrence.rawValue,
+                            timeOfDay: includeTimeOfDay ? timeOfDay : nil,
                             context: context
                         )
                         dismiss()
