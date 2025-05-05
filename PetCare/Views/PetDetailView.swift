@@ -37,6 +37,8 @@ struct PetDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 
                 petInfoSection
+                vaccinesSection
+                pastAppointmentsSection
                 contactsSection
                 logSection
                 
@@ -93,6 +95,71 @@ struct PetDetailView: View {
             .foregroundColor(.primary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, 4)
+        }
+    }
+    
+    private var vaccinesSection: some View {
+        GroupBox(label: Label("Vaccines", systemImage: "cross.case")) {
+            VStack(alignment: .leading, spacing: 6) {
+                if let vaccines = pet.vaccines, !vaccines.isEmpty {
+                    ForEach(Array(vaccines), id: \.id) { vaccine in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(vaccine.name)
+                                .font(.headline)
+                            
+                            if let lastDate = vaccine.lastAdministered {
+                                let dueDate = Calendar.current.date(byAdding: .day, value: Int(vaccine.intervalInDays), to: lastDate)
+                                Text("Last dose: \(lastDate.formatted(date: .abbreviated, time: .omitted))")
+                                    .font(.subheadline)
+                                if let dueDate = dueDate {
+                                    Text("Due: \(dueDate.formatted(date: .abbreviated, time: .omitted))")
+                                        .font(.footnote)
+                                        .foregroundColor(vaccine.isOverdue ? .red : .secondary)
+                                }
+                            } else {
+                                Text("No record of administration.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                } else {
+                    Text("No vaccines recorded.")
+                        .foregroundColor(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+    
+    private var pastAppointmentsSection: some View {
+        GroupBox(label: Label("Past Appointments", systemImage: "calendar")) {
+            VStack(alignment: .leading, spacing: 6) {
+                let pastAppointments = pet.sortedAppointments.filter { $0.date < Date() }
+                
+                if pastAppointments.isEmpty {
+                    Text("No past appointments.")
+                        .foregroundColor(.secondary)
+                } else {
+                    ForEach(pastAppointments, id: \.id) { appointment in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(appointment.title)
+                                .font(.headline)
+                            Text(appointment.date.formatted(date: .abbreviated, time: .shortened))
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                            if let notes = appointment.notes, !notes.isEmpty {
+                                Text("Notes: \(notes)")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
     
