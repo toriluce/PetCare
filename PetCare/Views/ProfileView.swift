@@ -4,16 +4,17 @@ import CoreData
 struct ProfileView: View {
     @Environment(\.managedObjectContext) private var context
     @Environment(\.dismiss) private var dismiss
-
+    @EnvironmentObject var petCareViewModel: PetCareViewModel
+    
     @State private var showingAddPet = false
     @State private var petToDelete: Pet?
     @State private var showDeleteAlert = false
-
+    
     @FetchRequest(
         entity: Pet.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Pet.name, ascending: true)]
     ) var pets: FetchedResults<Pet>
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if pets.isEmpty {
@@ -28,9 +29,11 @@ struct ProfileView: View {
                         Text("Your Pets")
                             .font(.headline)
                             .padding(.horizontal)
-
+                        
                         ForEach(pets, id: \.id) { pet in
-                            NavigationLink(destination: PetDetailView(pet: pet)) {
+                            NavigationLink(destination: PetDetailView(pet: pet)
+                                .environmentObject(petCareViewModel)
+                            ) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(pet.name)
                                         .font(.headline)
@@ -46,7 +49,7 @@ struct ProfileView: View {
                             .buttonStyle(PlainButtonStyle())
                             .padding(.horizontal)
                         }
-
+                        
 #if DEBUG
                         Spacer()
                         NotificationDebugView()
@@ -56,7 +59,7 @@ struct ProfileView: View {
                     .padding(.vertical)
                 }
             }
-
+            
             Button(action: {
                 showingAddPet = true
             }) {

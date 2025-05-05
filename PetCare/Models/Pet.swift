@@ -13,6 +13,7 @@ final class Pet: NSManagedObject, Identifiable {
     @NSManaged var contacts: Set<Contact>?
     @NSManaged var appointments: Set<Appointment>?
     @NSManaged var vaccines: Set<Vaccine>?
+    @NSManaged var photo: Data?
 
     override func awakeFromInsert() {
         super.awakeFromInsert()

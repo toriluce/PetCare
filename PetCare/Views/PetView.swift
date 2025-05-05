@@ -6,7 +6,6 @@ struct PetView: View {
     
     var pet: Pet
     @State private var showingAddTask = false
-    @State private var showingReorderSheet = false
     
     @FetchRequest var tasks: FetchedResults<Task>
     
@@ -22,18 +21,25 @@ struct PetView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
+                if let data = pet.photo, let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 80, height: 80)
+                        .clipShape(Circle())
+                } else {
+                    Circle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 80, height: 80)
+                }
                 Text(pet.name)
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                Spacer()
-                Button("Edit Task Order") {
-                    showingReorderSheet = true
-                }
             }
             .padding(.bottom, 5)
             
-            TaskListView(tasks: tasks.sorted { $0.sortOrder < $1.sortOrder })
-            
+            TaskListView(pet: pet, tasks: tasks.sorted { $0.sortOrder < $1.sortOrder })
+
             Button("Add Task") {
                 showingAddTask = true
             }
@@ -48,10 +54,6 @@ struct PetView: View {
         )
         .sheet(isPresented: $showingAddTask) {
             TaskFormView(pet: pet)
-                .environment(\.managedObjectContext, context)
-        }
-        .sheet(isPresented: $showingReorderSheet) {
-            EditTaskOrderView(pet: pet)
                 .environment(\.managedObjectContext, context)
         }
     }

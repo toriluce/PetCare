@@ -63,6 +63,11 @@ struct PetDetailView: View {
             TaskLogView(pet: pet)
                 .environment(\.managedObjectContext, context)
         }
+        .sheet(isPresented: $showingEditForm) {
+            PetFormView(existingPet: pet)
+                .environment(\.managedObjectContext, context)
+                .environmentObject(petCareViewModel)
+        }
         .alert("Delete Pet Profile", isPresented: $showDeleteAlert) {
             Button("Delete", role: .destructive) {
                 petCareViewModel.deletePet(pet, context: context)

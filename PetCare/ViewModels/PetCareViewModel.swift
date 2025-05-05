@@ -16,24 +16,24 @@ class PetCareViewModel: ObservableObject {
     }
 
     // Pet Functions
-    func addPet(name: String, breed: String, species: String, birthday: Date?, notes: String?, context: NSManagedObjectContext) {
+    func addPet(name: String, breed: String, species: String, birthday: Date?, notes: String?, imageData: Data?, context: NSManagedObjectContext) {
         let newPet = Pet(context: context)
         newPet.name = name
         newPet.breed = breed
         newPet.species = species
         newPet.birthday = birthday ?? Date()
         newPet.notes = notes
-
+        newPet.photo = imageData
         saveContext(context)
     }
 
-    func editPet(_ pet: Pet, name: String, breed: String, species: String, birthday: Date, notes: String, context: NSManagedObjectContext) {
+    func editPet(_ pet: Pet, name: String, breed: String, species: String, birthday: Date, notes: String, imageData: Data?, context: NSManagedObjectContext) {
         pet.name = name
         pet.breed = breed
         pet.species = species
         pet.birthday = birthday
         pet.notes = notes
-
+        pet.photo = imageData
         saveContext(context)
     }
 
@@ -149,6 +149,8 @@ class PetCareViewModel: ObservableObject {
         pet.appointments?.insert(appointment)
 
         saveContext(context)
+
+        TaskNotificationManager.shared.scheduleAppointmentReminder(for: appointment)
     }
 
     func deleteAppointment(_ appointment: Appointment, from pet: Pet, context: NSManagedObjectContext) {
@@ -198,6 +200,8 @@ class PetCareViewModel: ObservableObject {
         pet.vaccines?.insert(vaccine)
 
         saveContext(context)
+
+        TaskNotificationManager.shared.scheduleVaccineReminder(for: vaccine)
     }
 
     func deleteVaccine(_ vaccine: Vaccine, context: NSManagedObjectContext) {

@@ -4,25 +4,48 @@ struct PetFormView: View {
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var petCareViewModel: PetCareViewModel
     @Environment(\.dismiss) private var dismiss
-    
+
     var existingPet: Pet?
-    
+
     @State private var name = ""
     @State private var breed = ""
     @State private var species = ""
     @State private var birthday = Date()
     @State private var notes = ""
-    
+
+    @State private var selectedImage: UIImage?
+    @State private var showingImagePicker = false
+
     @State private var showContactForm = false
     @State private var selectedContact: Contact?
-    
+
     var contacts: [Contact] {
         existingPet?.contacts?.sorted { $0.title < $1.title } ?? []
     }
-    
+
     var body: some View {
         NavigationView {
             Form {
+                Section(header: Text("Photo")) {
+                    HStack {
+                        if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 60, height: 60)
+                                .clipShape(Circle())
+                        } else {
+                            Circle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 60, height: 60)
+                        }
+
+                        Button("Choose Photo") {
+                            showingImagePicker = true
+                        }
+                    }
+                }
+
                 Section(header: Text("Pet Details")) {
                     TextField("Name", text: $name)
                     TextField("Breed", text: $breed)
@@ -30,7 +53,7 @@ struct PetFormView: View {
                     DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
                     TextField("Notes", text: $notes)
                 }
-                
+
                 if existingPet != nil {
                     Section(header: Text("Contacts")) {
                         ForEach(contacts, id: \.id) { contact in
@@ -47,7 +70,7 @@ struct PetFormView: View {
                                 showContactForm = true
                             }
                         }
-                        
+
                         Button("Add Contact") {
                             selectedContact = nil
                             showContactForm = true
@@ -59,15 +82,34 @@ struct PetFormView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
+
                         if let pet = existingPet {
-                            petCareViewModel.editPet(pet, name: name, breed: breed, species: species, birthday: birthday, notes: notes, context: context)
+                            petCareViewModel.editPet(
+                                pet,
+                                name: name,
+                                breed: breed,
+                                species: species,
+                                birthday: birthday,
+                                notes: notes,
+                                imageData: imageData,
+                                context: context
+                            )
                         } else {
-                            petCareViewModel.addPet(name: name, breed: breed, species: species, birthday: birthday, notes: notes, context: context)
+                            petCareViewModel.addPet(
+                                name: name,
+                                breed: breed,
+                                species: species,
+                                birthday: birthday,
+                                notes: notes,
+                                imageData: imageData,
+                                context: context
+                            )
                         }
                         dismiss()
                     }
                 }
-                
+
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -80,6 +122,9 @@ struct PetFormView: View {
                         .environment(\.managedObjectContext, context)
                 }
             }
+            .sheet(isPresented: $showingImagePicker) {
+                ImagePicker(image: $selectedImage)
+            }
             .onAppear {
                 if let pet = existingPet {
                     name = pet.name
@@ -87,6 +132,9 @@ struct PetFormView: View {
                     species = pet.species
                     birthday = pet.birthday
                     notes = pet.notes ?? ""
+                    if let data = pet.photo {
+                        selectedImage = UIImage(data: data)
+                    }
                 }
             }
         }

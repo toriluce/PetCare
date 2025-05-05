@@ -65,11 +65,9 @@ struct CalendarView: View {
                 
                 Spacer()
                 
-                Menu {
-                    ForEach(pets, id: \.id) { pet in
-                        Button("Add Appointment for \(pet.name)") {
-                            selectedPetForNewAppointment = pet
-                        }
+                Button {
+                    if let firstPet = pets.first {
+                        selectedPetForNewAppointment = firstPet
                     }
                 } label: {
                     Label("Add Appointment", systemImage: "plus")
@@ -118,9 +116,19 @@ struct CalendarView: View {
                 Text(appointment.date.formatted(date: .abbreviated, time: .shortened))
                     .font(.subheadline)
                 Spacer()
-                Text(pet.name)
-                    .font(.subheadline)
-                    .foregroundColor(.accentColor)
+                if let data = pet.photo, let image = UIImage(data: data) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 24, height: 24)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.accentColor, lineWidth: 1))
+                } else {
+                    Text(pet.name)
+                        .font(.subheadline)
+                        .foregroundColor(.accentColor)
+                        .lineLimit(1)
+                }
             }
             
             Text("Reason: \(appointment.title)")
@@ -132,7 +140,7 @@ struct CalendarView: View {
             
             if let vaccines = appointment.vaccines, !vaccines.isEmpty {
                 ForEach(Array(vaccines), id: \.id) { vaccine in
-                    Text("💉 \(vaccine.name)")
+                    Text("Vaccine Scheduled: \(vaccine.name)")
                         .foregroundColor(vaccine.isOverdue ? .red : .primary)
                 }
             }
