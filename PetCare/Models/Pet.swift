@@ -12,6 +12,7 @@ final class Pet: NSManagedObject, Identifiable {
     @NSManaged var logs: Set<Log>?
     @NSManaged var contacts: Set<Contact>?
     @NSManaged var appointments: Set<Appointment>?
+    @NSManaged var vaccines: Set<Vaccine>?
 
     override func awakeFromInsert() {
         super.awakeFromInsert()
@@ -32,6 +33,7 @@ final class Pet: NSManagedObject, Identifiable {
     var sortedAppointments: [Appointment] {
         appointments?.sorted(by: { $0.date < $1.date }) ?? []
     }
+    
     var vaccinesDueSoon: [Vaccine] {
         guard let allVaccines = appointments?.flatMap({ $0.vaccines ?? [] }) else {
             return []
@@ -44,6 +46,29 @@ final class Pet: NSManagedObject, Identifiable {
                 return true
             }
             return dueDate <= now
+        }
+    }
+    
+    var age: String {
+        let now = Date()
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day], from: birthday, to: now)
+
+        let years = components.year ?? 0
+        let months = components.month ?? 0
+        let days = components.day ?? 0
+
+        switch (years, months, days) {
+        case (0, 0, 0..<7):
+            return "\(days) day\(days == 1 ? "" : "s") old"
+        case (0, 0, _):
+            return "\(days) days old"
+        case (0, _, _):
+            return "\(months) month\(months == 1 ? "" : "s") old"
+        case (_, 0, _):
+            return "\(years) year\(years == 1 ? "" : "s") old"
+        default:
+            return "\(years) year\(years == 1 ? "" : "s"), \(months) month\(months == 1 ? "" : "s") old"
         }
     }
 }

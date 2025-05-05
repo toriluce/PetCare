@@ -9,7 +9,7 @@ final class Task: NSManagedObject, Identifiable {
     @NSManaged var repeatFrequency: String?
     @NSManaged var timeOfDay: Date?
     @NSManaged var lastCompletedAt: Date?
-    @NSManaged var pet: Pet?
+    @NSManaged var pet: Pet
     @NSManaged var sortOrder: Int64
     
     override func awakeFromInsert() {

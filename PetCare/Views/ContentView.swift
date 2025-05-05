@@ -36,14 +36,19 @@ struct ContentView: View {
                     }
                 }
                 .sheet(isPresented: $isProfileMenuOpen) {
-                    ProfileView()
-                        .environment(\.managedObjectContext, context)
-                        .environmentObject(petCareViewModel)
-                }
+                    NavigationStack {
+                        ProfileView()
+                            .environment(\.managedObjectContext, context)
+                            .environmentObject(petCareViewModel)
+                    }}
                 .sheet(isPresented: $showAppointments) {
-                    AppointmentsView(pets: petCareViewModel.pets)
-                        .environment(\.managedObjectContext, context)
+                    NavigationStack {
+                        CalendarView(pets: petCareViewModel.pets)
+                            .environment(\.managedObjectContext, context)
+                            .environmentObject(petCareViewModel)
+                    }
                 }
+
         }
         .onAppear {
             petCareViewModel.fetchPets(context: context)

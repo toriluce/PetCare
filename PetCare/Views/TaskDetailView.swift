@@ -58,23 +58,23 @@ struct TaskDetailView: View {
                     .padding(.top, 4)
                 }
 
-                if let pet = task.pet {
-                    Button(showingPetDetails ? "Hide Pet Details" : "Show Pet Details") {
-                        withAnimation {
-                            showingPetDetails.toggle()
-                        }
-                    }
+                let pet = task.pet
 
-                    if showingPetDetails {
-                        GroupBox(label: Label("Pet Info", systemImage: "pawprint")) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Name: \(pet.name)")
-                                Text("Breed: \(pet.breed)")
-                                Text("Species: \(pet.species)")
-                                Text("Birthday: \(pet.birthday.formatted(date: .abbreviated, time: .omitted))")
-                                if let notes = pet.notes, !notes.isEmpty {
-                                    Text("Notes: \(notes)")
-                                }
+                Button(showingPetDetails ? "Hide Pet Details" : "Show Pet Details") {
+                    withAnimation {
+                        showingPetDetails.toggle()
+                    }
+                }
+
+                if showingPetDetails {
+                    GroupBox(label: Label("Pet Info", systemImage: "pawprint")) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Name: \(pet.name)")
+                            Text("Breed: \(pet.breed)")
+                            Text("Species: \(pet.species)")
+                            Text("Birthday: \(pet.birthday.formatted(date: .abbreviated, time: .omitted))")
+                            if let notes = pet.notes, !notes.isEmpty {
+                                Text("Notes: \(notes)")
                             }
                         }
                     }
@@ -99,7 +99,7 @@ struct TaskDetailView: View {
             }
         }
         .sheet(isPresented: $showingEdit) {
-            TaskFormView(pet: task.pet!, existingTask: task)
+            TaskFormView(pet: task.pet, existingTask: task)
                 .environment(\.managedObjectContext, context)
                 .environmentObject(PetCareViewModel())
         }

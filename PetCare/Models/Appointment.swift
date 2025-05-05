@@ -5,6 +5,9 @@ final class Appointment: NSManagedObject, Identifiable {
     @NSManaged var id: UUID
     @NSManaged var title: String
     @NSManaged var date: Date
+    @NSManaged var notes: String?
+    @NSManaged var intervalInDays: Int64
+    @NSManaged var lastAppointment: Date?
     @NSManaged var pet: Pet
     @NSManaged var contact: Contact?
     @NSManaged var vaccines: Set<Vaccine>?
