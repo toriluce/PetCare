@@ -54,9 +54,9 @@ struct CalendarView: View {
                     
                     GroupBox(label: Label("Suggested Appointments", systemImage: "calendar.badge.clock")) {
                         if suggestedAppointments.isEmpty {
-                            Spacer()
                             Text("No suggested appointments.")
                                 .foregroundColor(.secondary)
+                                .padding()
                         } else {
                             ForEach(suggestedAppointments, id: \.0.id) { (appointment, pet) in
                                 appointmentRow(for: appointment, pet: pet, isSuggested: true)
