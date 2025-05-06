@@ -48,8 +48,8 @@ struct PetFormView: View {
 
                 Section(header: Text("Pet Details")) {
                     TextField("Name", text: $name)
-                    TextField("Breed", text: $breed)
                     TextField("Species", text: $species)
+                    TextField("Breed", text: $breed)
                     DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
                     TextField("Notes", text: $notes)
                 }

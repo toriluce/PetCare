@@ -13,6 +13,11 @@ struct SuggestedAppointmentManager {
 
     static func suggestNextAppointmentDate(for pet: Pet) -> Date {
         let dueSoon = pet.vaccinesDueSoon
-        return suggestedDate(for: dueSoon) ?? Calendar.current.date(byAdding: .day, value: 30, to: Date())!
+        if let suggested = suggestedDate(for: dueSoon) {
+            return suggested
+        } else {
+            let baseDate = Calendar.current.date(byAdding: .day, value: 30, to: Date())!
+            return Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: baseDate) ?? baseDate
+        }
     }
 }
