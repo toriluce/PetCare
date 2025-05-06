@@ -72,4 +72,18 @@ final class Pet: NSManagedObject, Identifiable {
             return "\(years) year\(years == 1 ? "" : "s"), \(months) month\(months == 1 ? "" : "s") old"
         }
     }
+    
+    var sortedTasks: [Task] {
+        (tasks ?? []).sorted {
+            if $0.isComplete != $1.isComplete {
+                return !$0.isComplete
+            }
+
+            guard let time0 = $0.timeOfDay, let time1 = $1.timeOfDay else {
+                return $0.timeOfDay != nil
+            }
+
+            return time0 < time1
+        }
+    }
 }

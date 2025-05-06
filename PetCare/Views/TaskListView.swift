@@ -21,7 +21,7 @@ struct TaskListView: View {
                     showingReorderSheet = true
                 }}
             
-            ForEach(tasks, id: \.self) { task in
+            ForEach(pet.sortedTasks, id: \.self) { task in
                 TaskView(task: task)
             }
         }
