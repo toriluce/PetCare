@@ -144,7 +144,13 @@ class PetCareViewModel: ObservableObject {
         appointment.vaccines = Set(vaccines)
         appointment.notes = notes
         appointment.intervalInDays = intervalInDays
-        appointment.lastAppointment = lastAppointment
+        if intervalInDays > 0 {
+            if date <= Date() {
+                appointment.lastAppointment = date
+            } else if let last = lastAppointment {
+                appointment.lastAppointment = last
+            }
+        }
 
         pet.appointments?.insert(appointment)
 

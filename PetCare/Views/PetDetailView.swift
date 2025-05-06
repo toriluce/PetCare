@@ -12,6 +12,8 @@ struct PetDetailView: View {
     @State private var showingFullLog = false
     @State private var editableTasks: [Task] = []
     @State private var showingContactForm = false
+    @State private var appointmentToEdit: Appointment?
+    @State private var showingVaccineForm = false
     
     var pet: Pet
     
@@ -70,6 +72,11 @@ struct PetDetailView: View {
                 .environment(\.managedObjectContext, context)
                 .environmentObject(petCareViewModel)
         }
+        .sheet(isPresented: $showingVaccineForm) {
+            VaccineFormView(pet: pet, contactOptions: pet.sortedContacts)
+                .environment(\.managedObjectContext, context)
+                .environmentObject(petCareViewModel)
+        }
         .alert("Delete Pet Profile", isPresented: $showDeleteAlert) {
             Button("Delete", role: .destructive) {
                 petCareViewModel.deletePet(pet, context: context)
@@ -106,7 +113,7 @@ struct PetDetailView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(vaccine.name)
                                 .font(.headline)
-                            
+
                             if let lastDate = vaccine.lastAdministered {
                                 let dueDate = Calendar.current.date(byAdding: .day, value: Int(vaccine.intervalInDays), to: lastDate)
                                 Text("Last dose: \(lastDate.formatted(date: .abbreviated, time: .omitted))")
@@ -127,11 +134,19 @@ struct PetDetailView: View {
                 } else {
                     Text("No vaccines recorded.")
                         .foregroundColor(.secondary)
+                        .padding(.top, 4)
                 }
+
+                Button("Add Vaccine") {
+                    showingVaccineForm = true
+                }
+                .font(.subheadline)
+                .padding(.top, 6)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
+
     
     private var pastAppointmentsSection: some View {
         GroupBox(label: Label("Past Appointments", systemImage: "calendar")) {
@@ -156,6 +171,10 @@ struct PetDetailView: View {
                             }
                         }
                         .padding(.vertical, 4)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            appointmentToEdit = appointment
+                        }
                     }
                 }
             }
@@ -202,6 +221,11 @@ struct PetDetailView: View {
         .sheet(isPresented: $showingContactForm) {
             ContactFormView(pet: pet)
                 .environment(\.managedObjectContext, context)
+        }
+        .sheet(item: $appointmentToEdit) { appointment in
+            AppointmentFormView(pet: pet, existingAppointment: appointment)
+                .environment(\.managedObjectContext, context)
+                .environmentObject(petCareViewModel)
         }
     }
     
